@@ -33,6 +33,9 @@ ifeq ($(PLATFORM),MSP432)
 	ARCH = -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16
 	SPECS = --specs=nosys.specs
 	LDFLAGS = -T $(LINKER_FILE)
+	SIZE = arm-none-eabi-size
+else
+	SIZE = size
 endif
 
 CFLAGS = -Wall -Werror -g -O0 -std=c99 $(INCLUDES)
@@ -64,6 +67,7 @@ build: $(SOURCES)
 	make dependency
 	make compile-all
 	$(CC) $(CFLAGS) $(LDFLAGS) -Xlinker -Map=c1m2.map -o c1m2.out $(SOURCES)
+	$(SIZE) c1m2.out
 
 .PHONY: clean
 clean:
