@@ -1,0 +1,6 @@
+*.map
+*.i
+*.d
+*.asm
+*.o
+c1m2.out

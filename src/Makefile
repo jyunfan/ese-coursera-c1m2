@@ -23,8 +23,8 @@
 #------------------------------------------------------------------------------
 include sources.mk
 
-# Platform Overrides
-PLATFORM = 
+# default Platform
+PLATFORM = HOST
 
 # Architectures Specific Flags
 LINKER_FILE = 
@@ -32,7 +32,7 @@ CPU =
 ARCH = 
 SPECS = 
 
-CFLAGS = -I$(INCLUDES)
+CFLAGS = -Wall -Werror -g -O0 -std=c99 -I$(INCLUDES)
 
 # Compiler Flags and Defines
 ifeq ($(PLATFORM),HOST)
@@ -41,6 +41,7 @@ ifeq ($(PLATFORM),HOST)
 	# etc
 else
 	CC = arm-none-eabi-gcc
+	CFLAGS := $(CFLAGS) -DMSP432
 	# etc
 endif
 
@@ -52,13 +53,19 @@ CPPFLAGs =
 compile-all: $(SOURCES)
 	$(CC) $(CFLAGS) -c $(SOURCES)
 
+.PHONY: dependency
+dependency: $(SOURCES)
+	$(CC) $(CFLAGS) -MM -MD -E $(SOURCES)
+
 .PHONY: build
 build: $(SOURCES)
-	$(CC) $(CFLAGS) -o c1m2.out $(SOURCES)
+	make dependency
+	make compile-all
+	$(CC) $(CFLAGS) -Xlinker -Map=c1m2.map -o c1m2.out $(SOURCES)
 
 .PHONY: clean
 clean:
-	rm -f *.o *.out *.map
+	rm -f *.o *.out *.map *.i *.asm *.d
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $^ -o $@
@@ -70,10 +77,10 @@ clean:
 	$(CC) $(CFLAGS) -S $^ -o $@
 
 %.d: %.c
-	$(CC) $(CFLAGS) -M $^ -o $@
+	$(CC) $(CFLAGS) -MM $^ -o $@
 
 c1m2.map:
 
 c1m2.out: 
-
+	$(CC) $(CFLAGS) -o c1m2.out $(SOURCES)
 
