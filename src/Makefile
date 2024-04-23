@@ -21,32 +21,34 @@
 #      make PLATFORM=HOST|MSP432
 #
 #------------------------------------------------------------------------------
-include sources.mk
-
 # default Platform
 PLATFORM = HOST
 
-# Architectures Specific Flags
-LINKER_FILE = 
-CPU = 
-ARCH = 
-SPECS = 
+include sources.mk
 
-CFLAGS = -Wall -Werror -g -O0 -std=c99 -I$(INCLUDES)
+# Architectures Specific Flags
+ifeq ($(PLATFORM),MSP432)
+	LINKER_FILE = ../msp432p401r.lds
+	CPU = -mcpu=cortex-m4 -mthumb
+	ARCH = -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16
+	SPECS = --specs=nosys.specs
+	LDFLAGS = -T $(LINKER_FILE)
+endif
+
+CFLAGS = -Wall -Werror -g -O0 -std=c99 $(INCLUDES)
 
 # Compiler Flags and Defines
 ifeq ($(PLATFORM),HOST)
 	CC = gcc
-	CFLAGS := $(CFLAGS) -DHOST
+	CFLAGS := $(CFLAGS) $(CPU) $(ARCH) $(SPECS) -DHOST
 	# etc
 else
 	CC = arm-none-eabi-gcc
-	CFLAGS := $(CFLAGS) -DMSP432
+	CFLAGS := $(CFLAGS) $(CPU) $(ARCH) $(SPECS) -DMSP432
 	# etc
 endif
 
 LD = 
-LDFLAGS = 
 CPPFLAGs = 
 
 .PHONY: compile-all
@@ -61,7 +63,7 @@ dependency: $(SOURCES)
 build: $(SOURCES)
 	make dependency
 	make compile-all
-	$(CC) $(CFLAGS) -Xlinker -Map=c1m2.map -o c1m2.out $(SOURCES)
+	$(CC) $(CFLAGS) $(LDFLAGS) -Xlinker -Map=c1m2.map -o c1m2.out $(SOURCES)
 
 .PHONY: clean
 clean:
@@ -82,5 +84,5 @@ clean:
 c1m2.map:
 
 c1m2.out: 
-	$(CC) $(CFLAGS) -o c1m2.out $(SOURCES)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o c1m2.out $(SOURCES)
 

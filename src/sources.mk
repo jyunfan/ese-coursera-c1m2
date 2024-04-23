@@ -11,7 +11,14 @@
 
 # Add your Source files to this variable
 SOURCES = main.c memory.c
+ifeq ($(PLATFORM),HOST)
+else
+	SOURCES := $(SOURCES)
+endif
 
 # Add your include paths to this variable
-INCLUDES = ../include/common
-
+INCLUDES = -I ../include/common
+ifeq ($(PLATFORM),HOST)
+else
+	INCLUDES := $(INCLUDES) -I ../include/msp432 -I ../include/CMSIS
+endif
